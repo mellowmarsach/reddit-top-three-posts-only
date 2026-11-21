@@ -117,28 +117,10 @@
                 white-space:nowrap;
                 font-size:90%
             }
-            .x{
-                cursor:pointer;
-                padding:0 4px
-            }
-            button{
-                all:unset;
-                cursor:pointer;
-                font:600 12px system-ui;
-                background:#d93a00;
-                color:#fff;
-                padding:6px 12px;
-                border-radius:999px;
-                margin-top:10px
-            }
-            button:active{
-                transform:scale(.97)
-            }
         </style>
         <div class="box">
-            <div class="head"><span>Top ${posts.length} on Best</span><span class="x">✕</span></div>
+            <div class="head"><span>Top ${posts.length} on Best</span></div>
             <div id="list"></div>
-            <button id="copy">Copy links</button>
         </div>`;
 
         const list = root.getElementById('list');
@@ -146,20 +128,16 @@
         const a = document.createElement('a');
         a.href = p.url;
         a.textContent = p.title || p.url;
+        if (p.subreddit) {
+            const sub = document.createElement('span');
+            sub.className = 'sub';
+            sub.textContent = ' · ' + p.subreddit;
+            a.append(sub);
+        }
         list.append(a);
         });
 
-        root.getElementById('copy').onclick = async e => {
-        const text = posts.map(p => p.url).join('\n');
-        try {
-            await navigator.clipboard.writeText(text);
-            e.target.textContent = 'Copied';
-        } catch {
-            e.target.textContent = 'Copy failed';
-        }
-        setTimeout(() => (e.target.textContent = 'Copy links'), 1200);
-        };
-        // lock the page behind the overlay, restore it on close
+        // lock the page behind the overlay
         const html = document.documentElement;
         const prevOverflow = html.style.overflow;
         html.style.overflow = 'hidden';
@@ -167,13 +145,8 @@
         closeOverlay = () => {
             html.style.overflow = prevOverflow;
             host.remove();
-            document.removeEventListener('keydown', onKey);
             closeOverlay = null;
         };
-        const onKey = e => { if (e.key === 'Escape') closeOverlay?.(); };
-        document.addEventListener('keydown', onKey);
-
-        root.querySelector('.x').onclick = () => closeOverlay?.();
 
         document.body.append(host);
     }
